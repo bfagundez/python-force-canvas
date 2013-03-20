@@ -12,17 +12,13 @@ class SignedRequest(object):
   def verifyAndDecode(self):
 
     # Validate secret and signed request string.
-    if self.consumerSecret == None:
-      raise AttributeError('No consumer secret found in environment [CANVAS_CONSUMER_SECRET].') 
-    
-    if self.signedRequest == None:
-      raise AttributeError('Signed request parameter required.') 
+    assert self.consumerSecret != None,'No consumer secret found in environment [CANVAS_CONSUMER_SECRET].'
+    assert self.signedRequest != None, 'Signed request parameter required.'
 
     # 1) Split the signed request into signature and payload.
     request_array = self.signedRequest.split('.')
     
-    if len(request_array) != 2:
-      raise AttributeError('Incorrectly formatted signed request.') 
+    assert len(request_array) == 2, 'Incorrectly formatted signed request.' 
 
     signature = request_array[0]
     payload = request_array[1]
@@ -33,8 +29,7 @@ class SignedRequest(object):
 
     this_hmac = hmac.new(self.consumerSecret,payload,hashlib.sha256)
     
-    if decodedSignature != this_hmac.digest():
-      raise Exception('Signed request has been tampered with.') 
+    assert decodedSignature == this_hmac.digest(), 'Signed request has been tampered with.' 
     
     # 3) Decode the base64 encoded payload of the canvas request.
     jsonString = base64.b64decode(payload)
